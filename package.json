@@ -1,58 +1,63 @@
 const socket = io();
-
-const canvas = document.getElementById("game");
+const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 600;
-canvas.height = 400;
+canvas.width = 700;
+canvas.height = 500;
 
-let roomId = "";
-let players = {};
-let myId = null;
+let roomId="";
+let state={};
+let myId=null;
 
-function join() {
-  roomId = document.getElementById("room").value;
-  socket.emit("joinRoom", roomId);
-  document.getElementById("menu").style.display = "none";
+socket.on("connect",()=>myId=socket.id);
+
+socket.on("state",(s)=>{state=s;draw();});
+
+function join(){
+ roomId=document.getElementById("room").value;
+ socket.emit("join",roomId);
+ document.getElementById("menu").style.display="none";
 }
 
-socket.on("connect", () => {
-  myId = socket.id;
-});
-
-socket.on("roomUpdate", (data) => {
-  players = data;
-  draw();
-});
-
-function move(dx, dy) {
-  if (!players[myId]) return;
-
-  players[myId].x += dx;
-  players[myId].y += dy;
-
-  socket.emit("move", {
-    roomId,
-    x: players[myId].x,
-    y: players[myId].y
-  });
+function mv(x,y){
+ const p=state.players?.[myId];
+ if(!p) return;
+ p.x+=x;p.y+=y;
+ socket.emit("move",{roomId,x:p.x,y:p.y});
 }
 
-document.addEventListener("keydown", (e) => {
-  if (!players[myId]) return;
+function task(){
+ socket.emit("task",{roomId});
+}
 
-  if (e.key === "w") move(0, -10);
-  if (e.key === "s") move(0, 10);
-  if (e.key === "a") move(-10, 0);
-  if (e.key === "d") move(10, 0);
+function report(){
+ socket.emit("report",roomId);
+}
+
+document.addEventListener("keydown",(e)=>{
+ if(e.key==="w")mv(0,-10);
+ if(e.key==="s")mv(0,10);
+ if(e.key==="a")mv(-10,0);
+ if(e.key==="d")mv(10,0);
 });
 
-function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+function draw(){
+ ctx.clearRect(0,0,700,500);
 
-  for (let id in players) {
-    const p = players[id];
-    ctx.fillStyle = p.color;
-    ctx.fillRect(p.x, p.y, 20, 20);
-  }
+ if(!state.players) return;
+
+ for(let id in state.players){
+  let p=state.players[id];
+
+  ctx.fillStyle=p.color;
+  ctx.globalAlpha=p.alive?1:0.3;
+  ctx.fillRect(p.x,p.y,20,20);
+
+  ctx.globalAlpha=1;
+ }
+
+ if(state.meeting){
+  ctx.fillStyle="white";
+  ctx.fillText("MEETING TIME - VOTE IN CONSOLE",250,250);
+ }
 }

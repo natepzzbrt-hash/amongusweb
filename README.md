@@ -1,5 +1,5 @@
 {
-  "name": "among-railway-starter",
+  "name": "social-deduction-railway-v2",
   "version": "1.0.0",
   "main": "server.js",
   "type": "commonjs",
