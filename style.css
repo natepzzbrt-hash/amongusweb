@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multiplayer Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="menu">
+    <h2>Join Game</h2>
+    <input id="room" placeholder="Room Code" />
+    <button onclick="join()">Join</button>
+  </div>
+
+  <canvas id="game"></canvas>
+
+  <div id="mobile">
+    <button onclick="move(0,-10)">⬆️</button><br/>
+    <button onclick="move(-10,0)">⬅️</button>
+    <button onclick="move(10,0)">➡️</button><br/>
+    <button onclick="move(0,10)">⬇️</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

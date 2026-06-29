@@ -1,0 +1,58 @@
+const socket = io();
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 600;
+canvas.height = 400;
+
+let roomId = "";
+let players = {};
+let myId = null;
+
+function join() {
+  roomId = document.getElementById("room").value;
+  socket.emit("joinRoom", roomId);
+  document.getElementById("menu").style.display = "none";
+}
+
+socket.on("connect", () => {
+  myId = socket.id;
+});
+
+socket.on("roomUpdate", (data) => {
+  players = data;
+  draw();
+});
+
+function move(dx, dy) {
+  if (!players[myId]) return;
+
+  players[myId].x += dx;
+  players[myId].y += dy;
+
+  socket.emit("move", {
+    roomId,
+    x: players[myId].x,
+    y: players[myId].y
+  });
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!players[myId]) return;
+
+  if (e.key === "w") move(0, -10);
+  if (e.key === "s") move(0, 10);
+  if (e.key === "a") move(-10, 0);
+  if (e.key === "d") move(10, 0);
+});
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for (let id in players) {
+    const p = players[id];
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, 20, 20);
+  }
+}
